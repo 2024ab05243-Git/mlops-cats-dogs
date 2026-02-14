@@ -6,3 +6,11 @@ stages:
     - src/data/preprocess.py
     outs:
     - data/processed
+  train:
+    cmd: python -m src.training.train
+    deps:
+    - data/processed
+    - src/models/model.py
+    - src/training/train.py
+    outs:
+    - artifacts/model.pt
