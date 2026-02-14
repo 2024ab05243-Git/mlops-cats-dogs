@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
-  packages: write
+  contents: read  # Allow read access to repository contents
+  packages: write  # Allow write access to GitHub Container Registry
 
 jobs:
 
