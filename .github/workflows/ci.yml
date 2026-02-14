@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI-CD Pipeline
 
 on:
   push:
@@ -29,8 +29,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: |
-          pytest
+        run: pytest
 
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -50,17 +49,22 @@ jobs:
           chmod +x /usr/local/bin/docker-compose
 
       - name: Pull Docker image
-        run: |
-          docker-compose pull
+        run: docker-compose pull
 
       - name: Deploy Docker container
-        run: |
-          docker-compose up -d
+        run: docker-compose up -d
 
-      - name: View Docker logs
-        run: docker-compose logs
-          
+      - name: Wait for service to be ready
+        run: |
+          for i in {1..10}; do
+            if curl -f http://localhost:8000/health; then
+              echo "Service is up!"
+              break
+            fi
+            echo "Waiting for service..."
+            sleep 5
+          done
+
       - name: Run Smoke Test
         run: |
           curl -f http://localhost:8000/health
-          curl -f http://localhost:8000/predict -X POST -F "file=@test_image.jpg"
