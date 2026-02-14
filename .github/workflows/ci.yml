@@ -37,8 +37,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/cats-dogs-api:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/mlops-cats-dogs:latest .
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/cats-dogs-api:latest
+          docker push ghcr.io/${{ github.repository_owner }}/mlops-cats-dogs:latest
