@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  cats-dogs-api:
+    image: ghcr.io/2024ab05243-git/mlops-cats-dogs/cats-dogs-api:latest
+    container_name: cats-dogs-api
+    ports:
+      - "8000:8000"
+    restart: always

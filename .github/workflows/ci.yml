@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 jobs:
-  build-test:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,3 +43,18 @@ jobs:
 
       - name: Push Docker image
         run: docker push $IMAGE_NAME
+
+      # Step to deploy using Docker Compose
+      - name: Pull Docker image
+        run: |
+          docker-compose pull
+
+      - name: Deploy Docker container
+        run: |
+          docker-compose up -d
+
+      # Step for Smoke Test (Health Check)
+      - name: Run Smoke Test
+        run: |
+          curl -f http://localhost:8000/health
+          curl -f http://localhost:8000/predict -X POST -F "file=@test_image.jpg"
