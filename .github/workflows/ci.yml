@@ -32,14 +32,11 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u 2024ab05243-git --password-stdin
 
-      - name: Set image name
-        run: echo "IMAGE_NAME=ghcr.io/2024ab05243-git/mlops-cats-dogs/cats-dogs-api:latest" >> $GITHUB_ENV
-
       - name: Build image
-        run: docker build -t $IMAGE_NAME .
+        run: docker build -t ghcr.io/2024ab05243-git/mlops-cats-dogs/cats-dogs-api:latest .
 
       - name: Push image
-        run: docker push $IMAGE_NAME
+        run: docker push ghcr.io/2024ab05243-git/mlops-cats-dogs/cats-dogs-api:latest
 
 
   deploy:
@@ -56,10 +53,20 @@ jobs:
         run: docker compose up -d
 
       - name: Wait for service
+        shell: powershell
         run: |
-          for i in {1..10}; do
-            curl -f http://localhost:8000/health && exit 0
-            echo "Waiting..."
-            sleep 5
-          done
+          for ($i = 0; $i -lt 10; $i++) {
+              try {
+                  $response = Invoke-WebRequest -Uri http://localhost:8000/health -UseBasicParsing
+                  if ($response.StatusCode -eq 200) {
+                      Write-Host "Service is up!"
+                      exit 0
+                  }
+              }
+              catch {
+                  Write-Host "Waiting for service..."
+                  Start-Sleep -Seconds 5
+              }
+          }
+          Write-Host "Service failed to start"
           exit 1
