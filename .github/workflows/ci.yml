@@ -57,6 +57,9 @@ jobs:
         run: |
           docker-compose up -d
 
+      - name: View Docker logs
+        run: docker-compose logs
+          
       - name: Run Smoke Test
         run: |
           curl -f http://localhost:8000/health
