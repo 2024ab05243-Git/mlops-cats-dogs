@@ -44,7 +44,11 @@ jobs:
       - name: Push Docker image
         run: docker push $IMAGE_NAME
 
-      # Step to deploy using Docker Compose
+      - name: Install Docker Compose
+        run: |
+          curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
       - name: Pull Docker image
         run: |
           docker-compose pull
@@ -53,7 +57,6 @@ jobs:
         run: |
           docker-compose up -d
 
-      # Step for Smoke Test (Health Check)
       - name: Run Smoke Test
         run: |
           curl -f http://localhost:8000/health
