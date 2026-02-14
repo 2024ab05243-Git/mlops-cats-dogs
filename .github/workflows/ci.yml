@@ -11,7 +11,8 @@ permissions:
   packages: write
 
 jobs:
-  build-test-deploy:
+
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,15 +44,28 @@ jobs:
       - name: Push Docker image
         run: docker push $IMAGE_NAME
 
+
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Install Docker Compose
         run: |
           curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
 
-      - name: Pull Docker image
+      - name: Pull latest image
         run: docker-compose pull
 
-      - name: Deploy Docker container
+      - name: Deploy service
         run: docker-compose up -d
 
       - name: Wait for service to be ready
@@ -59,12 +73,10 @@ jobs:
           for i in {1..10}; do
             if curl -f http://localhost:8000/health; then
               echo "Service is up!"
-              break
+              exit 0
             fi
             echo "Waiting for service..."
             sleep 5
           done
-
-      - name: Run Smoke Test
-        run: |
-          curl -f http://localhost:8000/health
+          echo "Service failed to start"
+          exit 1
