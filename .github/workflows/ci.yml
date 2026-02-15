@@ -72,11 +72,27 @@ jobs:
       - name: Smoke Test - Prediction
         shell: powershell
         run: |
+          $boundary = [System.Guid]::NewGuid().ToString()
+          $filePath = "test_image.jpg"
+          $fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+
+          $LF = "`r`n"
+          $body = (
+            "--$boundary$LF" +
+            "Content-Disposition: form-data; name=`"file`"; filename=`"test_image.jpg`"$LF" +
+            "Content-Type: image/jpeg$LF$LF"
+          )
+
+          $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+          $endBytes = [System.Text.Encoding]::UTF8.GetBytes("$LF--$boundary--$LF")
+
+          $requestBody = $bodyBytes + $fileBytes + $endBytes
+
           $response = Invoke-WebRequest `
             -Uri http://localhost:8000/predict `
             -Method Post `
-            -Form @{ file = Get-Item "test_image.jpg" } `
-            -UseBasicParsing
+            -ContentType "multipart/form-data; boundary=$boundary" `
+            -Body $requestBody
 
           if ($response.StatusCode -ne 200) {
               Write-Host "Prediction failed"
