@@ -72,7 +72,7 @@ jobs:
       - name: Smoke Test - Prediction
         shell: powershell
         run: |
-          curl -X POST http://localhost:8000/predict `
+          curl.exe -X POST http://localhost:8000/predict `
             -F "file=@test_image.jpg"
 
           if ($LASTEXITCODE -ne 0) {
